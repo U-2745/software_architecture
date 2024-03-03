@@ -565,15 +565,47 @@ class RealizedMediator : Mediator
 }
 ```
 
-#### 5. 
+#### 5. Стратегия
 **Назначение:**
-- когда 
+- когда есть несколько родственных классов, которые отличаются поведением
+- когда необходимо обеспечить выбор из нескольких вариантов алгоритмов, которые можно легко менять в зависимости от условий
+- когда необходимо менять поведение объектов на стадии выполнения программы
+- когда класс, применяющий определенную функциональность, ничего не должен знать о её реализации.
   
 **UML-диаграмма**
 
-...
+![strategy](https://github.com/U-2745/software_architecture/assets/78296925/b0a2d756-6503-4300-a714-2436b929c2a1)
 
 **Код**
 ```
-
+// общий интерфейс для всех реализующих его алгоритмов
+public interface ILanguageStrategy
+{
+    void TextTransformations();
+}
+// 1 стратегия
+public class RussianLanguageStrategy : ILanguageStrategy
+{
+    public void TextTransformations() { }
+}
+// 2 стратегия
+public class EnglishLanguageStrategy : ILanguageStrategy
+{
+    public void TextTransformations() { }
+}
+ 
+public class LanguageContext
+{
+    public ILanguageStrategy LanguageStrategy { get; set; }
+ 
+    public LanguageContext(ILanguageStrategy _strategy)
+    {
+        LanguageStrategy = _strategy;
+    }
+ 
+    public void ExecuteTextTransformations()
+    {
+        LanguageStrategy.TextTransformations();
+    }
+}
 ```
