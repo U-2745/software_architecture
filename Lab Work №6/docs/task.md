@@ -350,4 +350,230 @@ public class GenerativeModuleFacade
 }
 ```
 
+#### 4. Адаптер
+**Назначение:**
+- когда нужно использовать имеющийся класс, но его интерфейс не соответствует потребностям
+- когда нужно использовать уже существующий класс совместно с другими классами, интерфейсы которых несовместимы.
+  
+**UML-диаграмма**
 
+![adapter](https://github.com/U-2745/software_architecture/assets/78296925/d475fdf9-56ca-4a0a-a193-f9dbd7e95f47)
+
+**Код**
+```
+// класс, к которому надо адаптировать другой класс   
+class ResultOutput
+{
+    public virtual void OutputResult() { }
+}
+  
+// адаптер
+class ResultAdapter : ResultOutput
+{
+    private OutputGenerator outputGenerator = new OutputGenerator();
+  
+    public override void OutputResult()
+    {
+        adaptee.GenerateOutput();
+    }
+}
+  
+// адаптируемый класс
+class OutputGenerator
+{
+    public void GenerateOutput() { }
+}
+```
+
+### Поведенческие шаблоны
+
+#### 1. Хранитель
+**Назначение:**
+- когда нужно сохранить состояние объекта для возможного последующего восстановления
+- когда сохранение состояния должно проходить без нарушения принципа инкапсуляции.
+  
+**UML-диаграмма**
+
+![memento](https://github.com/U-2745/software_architecture/assets/78296925/b240c1ce-c80c-454c-9bb4-5e4208dafbce)
+
+**Код**
+```
+// хранитель
+class MementoResult
+{
+    public string Result { get; private set;}
+    public MementoResult(string result)
+    {
+        this.Result = result;
+    }
+}
+
+// класс для сохранения состояния
+class CaretakerResult
+{
+    public MementoResult MementoResult { get; set; }
+}
+
+// чьё состояние сохраняем
+class Result
+{
+    public string result { get; set; }
+    public void SetMementoResult(MementoResult mementoResult)
+    {
+        Result = mementoResult.Result;
+    }
+    public MementoResult CreateMementoResult()
+    {
+        return new MementoResult(Result);
+    }
+}
+```
+
+#### 2. Состояние
+**Назначение:**
+- когда поведение объекта должно зависеть от его состояния и может изменяться динамически во время выполнения
+- когда в коде методов объекта используются многочисленные условные конструкции, выбор которых зависит от текущего состояния объекта.
+  
+**UML-диаграмма**
+
+![image](https://github.com/U-2745/software_architecture/assets/78296925/bafb39a4-5635-4f60-910c-21993a4f2d2b)
+
+**Код**
+```
+// определяет интерфейс состояния
+abstract class ResultState
+{
+    public abstract void Handle(GeneratedResult generatedResult);
+}
+// 1 реализация состояния
+class NotDetailed : ResultState
+{
+    public override void Handle(GeneratedResult generatedResult)
+    {
+        context.ResultState = new Detailed();
+    }
+}
+// 2 реализация состояния
+class Detailed : ResultState
+{
+    public override void Handle(GeneratedResult generatedResult)
+    { 
+        context.ResultState = new NotDetailed();
+    }
+}
+// объект, поведение которого должно изменяться в соответствии с состоянием
+class GeneratedResult
+{
+    public ResultState ResultState { get; set; }
+    public GeneratedResult(ResultState resultState)
+    {
+        this.ResultState = resultState;
+    }
+    public void Request()
+    {
+        this.ResultState.Handle(this);
+    }
+}
+```
+
+#### 3. Шаблонный метод
+**Назначение:**
+- когда планируется, что в будущем подклассы должны будут переопределять различные этапы алгоритма без изменения его структуры
+- когда в классах, реализующим схожий алгоритм, происходит дублирование кода.
+  
+**UML-диаграмма**
+
+![template method](https://github.com/U-2745/software_architecture/assets/78296925/7d2f6523-2c6f-4aba-b268-89ec4edd816f)
+
+**Код**
+```
+// родительский класс
+abstract class InputAnalyzer
+{
+    public void AnalyzeInput()
+    {
+        AnalyzeObject();
+        FormatResults();
+    }
+    public abstract void AnalyzeObject();
+    public abstract void FormatResults();
+}
+// подкласс
+class MoodAnalyzer : InputAnalyzer
+{
+    public override void AnalyzeObject() { }
+    public override void FormatResults() { }
+}
+```
+
+#### 4. Посредник
+**Назначение:**
+- когда имеется множество взаимосвязаных объектов, связи между которыми сложны и запутаны
+- когда необходимо повторно использовать объект, однако повторное использование затруднено в силу сильных связей с другими объектами.
+  
+**UML-диаграмма**
+
+![mediator](https://github.com/U-2745/software_architecture/assets/78296925/07a15bcd-0cf9-434c-8e8a-17ecacf26128)
+
+**Код**
+```
+// медиатор
+abstract class Mediator
+{
+    public abstract void Send(string input, SystemPart systemPart);
+}
+
+// родительский класс для взаимодействующих классов
+abstract class SystemPart
+{
+    protected Mediator mediator;
+ 
+    public SystemPart(Mediator mediator)
+    {
+        this.mediator = mediator;
+    }
+}
+
+// 1 взаимодействующий класс
+class SystemInputAnalyzer : SystemPart
+{
+    public SystemInputAnalyzer(Mediator mediator)  : base(mediator) { }
+    public void Send(string input)  { mediator.Send(input, this); }
+    public void Notify(string input) { }
+}
+ 
+// 2 взаимодействующий класс
+class SystemOutputParametersDefiner : SystemPart
+{
+    public SystemOutputParametersDefiner(Mediator mediator)  : base(mediator) { }
+    public void Send(string input)  { mediator.Send(input, this); }
+    public void Notify(string input) { }
+}
+ 
+// реализованный медиатор
+class RealizedMediator : Mediator
+{
+    public SystemInputAnalyzer InputAnalyzer { get; set; }
+    public SystemOutputParametersDefiner OutputParametersDefiner { get; set; }
+    public override void Send(string input, SystemPart systemPart)
+    {
+        if (InputAnalyzer == systemPart)
+            OutputParametersDefiner.Notify(msg);
+        else
+            InputAnalyzer.Notify(msg);
+    }
+}
+```
+
+#### 5. 
+**Назначение:**
+- когда 
+  
+**UML-диаграмма**
+
+...
+
+**Код**
+```
+
+```
